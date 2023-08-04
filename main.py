@@ -1,8 +1,8 @@
 
-def main(name):
-    print(f'Hi, {name}')
+def main():
+    print()
 
 
 if __name__ == '__main__':
-    main('PyCharm')
+    main()
 
