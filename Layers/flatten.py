@@ -1,14 +1,20 @@
-from attrs import define, field
 from typing import Callable
 
-from Activations.activation import Activation
-from .layer import Layer
 import numpy as np
+from attrs import define, field
+
+from .layer import Layer
 
 
 @define
 class Flatten(Layer):
     input_shape: tuple[int, ...] | None = field(init=False, default=None)
+
+    def build(self, input_shape: tuple[int, ...]) -> tuple[int, ...]:
+        self.input_shape = input_shape
+        length = np.prod(np.array(input_shape))
+        self.output_shape = (length,)
+        return self.output_shape
 
     def forward(self, input: np.ndarray, *, training: bool) -> np.ndarray:
         self.input_shape = input.shape

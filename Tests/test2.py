@@ -1,14 +1,14 @@
-from tensorflow import keras
-from keras import layers
-import torch
 import numpy as np
+from keras import layers
+from tensorflow import keras
 
-from Activations.relu import ReLU
-from Layers.flatten import Flatten
-from Layers.fully_connected import FullyConnected
-from Losses.mean_squared_error import MeanSquaredError
-from Losses.log_softmax_cross_entropy import LogSoftmaxCrossEntropy
+from Activations import Relu
+from Layers import Flatten
+from Layers import FullyConnected
+from Losses import LogSoftmaxCrossEntropy
+from Metrics import Accuracy
 from Models import Sequential
+from PreprocessingLayers import Normalization
 
 
 def split_given_size(arr, chunk_size, axis=0):
@@ -19,6 +19,7 @@ def keras_model(train, test, epoch, lr, batch_size):
     model = keras.Sequential(
         [
             keras.Input(shape=(28, 28)),
+            layers.Normalization(),
             layers.Flatten(),
             layers.Dense(512, activation="relu"),
             layers.Dense(256, activation="relu"),
@@ -39,24 +40,38 @@ def keras_model(train, test, epoch, lr, batch_size):
     print(model.predict(x_test[0].reshape(1, 28, 28)))
 
 
-def numpy_model(train, test, epochs, lr, batch_size, ):
-    layers = [
-        Flatten(),
-        FullyConnected(28 * 28, 512, ReLU()),
-        FullyConnected(512, 256, ReLU()),
-        FullyConnected(256, 64, ReLU()),
-        FullyConnected(64, 10)
-    ]
-    loss_function = LogSoftmaxCrossEntropy()
-    model = Sequential(layers, loss_function)
-
+def numpy_model(train, test, epochs, lr, batch_size):
     x_train, y_train = train
+
+    model = (
+        Sequential()
+        .add_preprocessing_layer(Normalization())
+
+        .add_layer(Flatten())
+
+        .add_layer(FullyConnected(512))
+        .add_layer(Relu())
+
+        .add_layer(FullyConnected(256))
+        .add_layer(Relu())
+
+        .add_layer(FullyConnected(64))
+        .add_layer(Relu())
+
+        .add_layer(FullyConnected(10))
+        .set_loss(LogSoftmaxCrossEntropy())
+        
+        .build(x_train, y_train)
+        .add_metric(Accuracy())
+    )
     model.train(x_train, y_train, lr, batch_size, epochs)
 
     x_test, y_test = test
     predicted, loss = model.evaluate(x_test, y_test)
-    accuracy = model._accuracy(predicted, y_test)
-    print(f"loss on test is ={loss}, accuracy={accuracy}")
+    print(f"loss on test is ={loss}")
+    metrics = model.run_metrics(predicted, y_test)
+    for metric, value in metrics.items():
+        print(f"{metric}={value}", end=", ")
 
     print(np.exp(model.predict(x_test[0].reshape(1, 28, 28))))
 
@@ -68,7 +83,7 @@ def main():
     batch_size = 64
     epochs = 10
 
-    keras_model(train, test, epochs, lr, batch_size)
+    # keras_model(train, test, epochs, lr, batch_size)
     numpy_model(train, test, epochs, lr, batch_size)
 
 

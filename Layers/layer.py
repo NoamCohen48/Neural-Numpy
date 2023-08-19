@@ -1,11 +1,17 @@
 from typing import Callable
 
 import numpy as np
-from attrs import define
+from attrs import define, field
 
 
 @define
 class Layer:
+    input_shape: tuple | None = field(init=False, default=None)
+    output_shape: tuple | None = field(init=False, default=None)
+
+    def build(self, input_shape: tuple[int, ...]) -> tuple[int, ...]:
+        raise NotImplemented
+
     def forward(self, input: np.ndarray, *, training: bool) -> np.ndarray:
         raise NotImplemented
 

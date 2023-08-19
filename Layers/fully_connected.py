@@ -1,16 +1,14 @@
-from attrs import define, field
 from typing import Callable
 
-from Activations.activation import Activation
-from .layer import Layer
 import numpy as np
+from attrs import define, field
+
+from .layer import Layer
 
 
 @define
 class FullyConnected(Layer):
-    input_size: int
-    output_size: int
-    activation: Activation | None = field(default=None)
+    output_size: int = field()
 
     weights: np.ndarray = field(init=False)
     biases: np.ndarray = field(init=False)
@@ -20,11 +18,17 @@ class FullyConnected(Layer):
 
     input: np.ndarray | None = field(init=False, default=None)
 
-    def __attrs_post_init__(self) -> None:
-        self.weights = np.random.randn(self.input_size, self.output_size) / np.sqrt(self.output_size)
+    def build(self, input_shape: tuple[int, ...]) -> tuple[int, ...]:
+        assert len(input_shape) == 1
+        input_size = input_shape[0]
+        self.input_shape = (input_size,)
+        self.output_shape = (self.output_size,)
+
+        self.weights = np.random.randn(input_size, self.output_size) / np.sqrt(self.output_size)
         self.biases = np.zeros((1, self.output_size))
 
         self._reset_gradients()
+        return self.output_shape
 
     def _reset_gradients(self) -> None:
         self.weights_gradient = np.zeros_like(self.weights)
@@ -38,16 +42,10 @@ class FullyConnected(Layer):
 
         out = np.dot(input, self.weights) + self.biases
 
-        if self.activation is None:
-            return out
-        else:
-            return self.activation.forward(out)
+        return out
 
     def backward(self, output_gradient: np.ndarray) -> np.ndarray:
         assert self.input is not None
-
-        if self.activation is not None:
-            output_gradient = self.activation.backward(output_gradient)
 
         batch_size = output_gradient.shape[0]
         self.weights_gradient += np.dot(self.input.T, output_gradient) / batch_size

@@ -5,10 +5,10 @@ from .activation import Activation
 
 
 @define
-class ReLU(Activation):
+class Relu(Activation):
     input: np.ndarray | None = field(init=False, default=None)
 
-    def forward(self, input: np.ndarray) -> np.ndarray:
+    def forward(self, input: np.ndarray, *, training: bool) -> np.ndarray:
         self.input = input
         return np.maximum(input, 0)
 

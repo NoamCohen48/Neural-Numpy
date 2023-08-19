@@ -3,7 +3,7 @@ from keras import layers
 import torch
 import numpy as np
 
-from Activations.relu import ReLU
+from Activations.relu import Relu
 from Layers.fully_connected import FullyConnected
 from Losses.mean_squared_error import MeanSquaredError
 from Models import Sequential
@@ -53,9 +53,9 @@ def keras_model(x_train, y_train, epoch, lr, batch_size, x_test):
 
 def numpy_model(x_train, y_train, epochs, lr, batch_size, x_test):
     layers = [
-        FullyConnected(28*28, 6, ReLU()),
-        FullyConnected(6, 6, ReLU()),
-        FullyConnected(6, 6, ReLU()),
+        FullyConnected(28 * 28, 6, Relu()),
+        FullyConnected(6, 6, Relu()),
+        FullyConnected(6, 6, Relu()),
         FullyConnected(6, 10)
     ]
     loss_function = MeanSquaredError()

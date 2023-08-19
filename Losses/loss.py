@@ -10,9 +10,6 @@ class Loss:
     def calc_loss(self, expected: np.ndarray) -> float:
         raise NotImplemented
 
-    def forward(self, input: np.ndarray, *, training: bool) -> np.ndarray:
-        raise NotImplemented
-
     def backward(self) -> np.ndarray:
         raise NotImplemented
 
